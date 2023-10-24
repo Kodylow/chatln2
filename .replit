@@ -1,0 +1,12 @@
+entrypoint = "src/index.ts"
+modules = ["bun-1.0:v1-20230911-f253fb1"]
+hidden = [".config", "bun.lockb"]
+run = ["sh", "-c", "bun run dev"]
+
+[nix]
+channel = "stable-22_11"
+
+[deployment]
+build = ["sh", "-c", "bunx tailwindcss -i ./src/styles/base.css -o ./public/styles/main.css"]
+run = ["sh", "-c", "bun run ./src/index.ts"]
+deploymentTarget = "cloudrun"

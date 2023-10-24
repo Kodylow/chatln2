@@ -1,0 +1,24 @@
+{
+  "name": "myapp",
+  "version": "1.0.50",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "bunx concurrently \"bun run --watch src/*\" \"bunx tailwindcss -i ./src/styles/base.css -o ./public/styles/main.css --watch\""
+  },
+  "dependencies": {
+    "@elysiajs/html": "^0.6.5",
+    "@elysiajs/static": "^0.6.0",
+    "@replit/ai-modelfarm": "^0.0.3",
+    "dompurify": "^3.0.5",
+    "elysia": "latest",
+    "marked": "^9.0.0",
+    "sanitize-html": "^2.11.0"
+  },
+  "devDependencies": {
+    "@types/sanitize-html": "latest",
+    "bun-types": "latest",
+    "concurrently": "^8.2.1",
+    "tailwindcss": "^3.3.3"
+  },
+  "module": "src/index.js"
+}
