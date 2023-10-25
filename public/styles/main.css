@@ -560,10 +560,6 @@ video {
   margin-bottom: 1rem;
 }
 
-.inline-block {
-  display: inline-block;
-}
-
 .flex {
   display: flex;
 }
@@ -580,8 +576,12 @@ video {
   height: 16.666667%;
 }
 
-.h-4\/6 {
-  height: 66.666667%;
+.h-\[6\%\] {
+  height: 6%;
+}
+
+.h-\[94\%\] {
+  height: 94%;
 }
 
 .min-h-screen {
@@ -643,9 +643,9 @@ video {
   background-color: rgb(59 130 246 / var(--tw-bg-opacity));
 }
 
-.bg-gray-200 {
+.bg-gray-100 {
   --tw-bg-opacity: 1;
-  background-color: rgb(229 231 235 / var(--tw-bg-opacity));
+  background-color: rgb(243 244 246 / var(--tw-bg-opacity));
 }
 
 .bg-gray-500 {
@@ -738,14 +738,6 @@ video {
   display: block;
   margin: 1em;
   padding: 1em;
-}
-
-#messages {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  overflow-y: auto;
-  scroll-behavior: smooth;
 }
 
 #messages h1,

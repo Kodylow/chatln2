@@ -9,12 +9,12 @@
     href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>💬</text></svg>">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0"/>
 </head>
-    <body class="min-h-screen flex flex-col bg-gray-200">
+    <body class="min-h-screen flex flex-col bg-gray-100">
         <div class="flex-grow relative p-4 py-8" hx-ext="ws" ws-connect="/chatbot">
             <span id="sats-display" class="absolute top-4 right-4 text-gray-600">0 sats</span>
                 <h1 class="text-2xl font-bold text-center">LN GPT 2.0⚡️</h1>
-                <section id="messages" class="my-4 h-4/6"></section>
-        <div id="this-div">
+                <section id="messages" class="my-4 h-[94%]"></section>
+        <div id="this-div" class="h-[6%]">
         <form 
             id="chat-form"
             hx-on::ws-before-send="beforeChatRequest()" 
@@ -26,6 +26,9 @@
         <input type="hidden" name="conversation" id="conversation" value="" hidden>
         <button id="send-button" type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-md">
           Send
+        </button>
+        <button id="clear-button" type="button" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-md" onclick="clearConversation()">
+            Restart
         </button>
       </form>
             <button id="top-up-button" onclick="topUp()" class="w-full bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-md" style="display: none;">
@@ -64,6 +67,25 @@
         toastError('Insufficient sats! Please top up.');
       }
     }
+
+      // Function to clear the conversation from both the display and localStorage
+      function clearConversation() {
+          // Clear the messages from the display
+          document.getElementById('messages').innerHTML = '';
+
+          // Clear the conversation from the local storage
+          localStorage.removeItem('conversationHistory');
+
+          // Reset the conversation array
+          conversation.length = 0;
+      }
+
+      // Display previous conversation (if any) when the page loads
+      document.addEventListener('DOMContentLoaded', function() {
+          const messagesDiv = document.getElementById('messages');
+          messagesDiv.innerHTML = conversation.join('<br>');  // Assuming each message is separated by a line break
+          scrollToBottom();
+      });
 
     async function topUp() {
       try {
@@ -123,18 +145,22 @@
       function updateUI() {
         const currentSats = getSatsFromStorage();
         const chatInput = document.getElementById('chat-input');
+        const clearButton = document.getElementById('clear-button');
         const sendButton = document.getElementById('send-button');
         const topUpButton = document.getElementById('top-up-button');
+        
 
         if (currentSats === 0) {
           chatInput.style.display = 'none';
           sendButton.style.display = 'none';
           topUpButton.style.display = 'inline-block';
+          clearButton.style.display = 'none';
           chatInput.removeAttribute('required');
         } else {
           chatInput.style.display = 'inline-block';
           sendButton.style.display = 'inline-block';
           topUpButton.style.display = 'none';
+          clearButton.style.display = 'inline-block';
           chatInput.setAttribute('required', true);
         }
       }
@@ -154,6 +180,14 @@
 
       document.getElementById('send-button').addEventListener('click', function(event) {
         deductSatsForSend();
+      });
+
+      document.body.addEventListener('htmx:afterSwap', function(event) {
+          console.log("htmx:afterSwap event triggered");
+          setTimeout(() => {
+              scrollToBottom();
+              console.log("Attempted to scroll to bottom");
+          }, 50);
       });
 
       document.addEventListener('DOMContentLoaded', checkWebLN);

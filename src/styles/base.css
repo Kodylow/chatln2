@@ -31,14 +31,6 @@
   padding: 1em;
 }
 
-#messages {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    overflow-y: auto;
-    scroll-behavior: smooth;
-}
-
 #messages h1,
 #messages h2, 
 #messages h3, 
