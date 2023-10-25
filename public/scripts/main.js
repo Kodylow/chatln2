@@ -31,6 +31,17 @@ document.body.addEventListener('htmx:afterSwap', function(event) {
     }, 50);
 });
 
+document.getElementById('drawer-toggle').addEventListener('click', function() {
+    const drawer = document.getElementById('drawer');
+    if (drawer.classList.contains('-translate-x-full')) {
+        drawer.classList.remove('-translate-x-full');
+        drawer.classList.add('translate-x-0');
+    } else {
+        drawer.classList.remove('translate-x-0');
+        drawer.classList.add('-translate-x-full');
+    }
+});
+
 function checkWebLN() {
     if (window.webln) {
         console.log("WebLN is already defined");
