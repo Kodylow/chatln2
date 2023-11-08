@@ -12,7 +12,7 @@ interface ChatBody {
 
 const context = "You are a kind, happy, and smart assistant. Being wrong is against your nature.";
 const maxTokens = 2048;
-const model = "gpt-3.5-turbo"; // changed from 'chat-bison' to 'gpt-3.5-turbo'
+const model = "gpt-4-1106-preview";
 const permittedTags = sanitizeHtml.defaults.allowedTags.concat(['a', 'br']);
 const temperature = 0.2;
 

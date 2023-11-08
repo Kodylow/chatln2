@@ -5,192 +5,63 @@
   <link href="/public/styles/main.css" rel="stylesheet">
   <script src="/public/scripts/htmx.min.js"></script>
   <script src="/public/scripts/htmx-ws.js"></script>
+  <script type="module" src="/public/scripts/main.js"></script>
+</head>
   <link rel="icon"
     href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>💬</text></svg>">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0"/>
 </head>
     <body class="min-h-screen flex flex-col bg-gray-100">
-        <div class="flex-grow relative p-4 py-8" hx-ext="ws" ws-connect="/chatbot">
-            <span id="sats-display" class="absolute top-4 right-4 text-gray-600">0 sats</span>
-                <h1 class="text-2xl font-bold text-center">LN GPT 2.0⚡️</h1>
-                <section id="messages" class="my-4 h-[94%]"></section>
+        <!-- <div id="drawer" class="fixed z-50 top-0 transform -translate-x-full w-72 h-full bg-gray-800 text-white p-4 transition-transform duration-300 ease-in-out">
+            Drawer content
+        </div> -->
+        <div class="flex-grow relative py-5" hx-ext="ws" ws-connect="/chatbot">
+            
+            <div class="flex flex-col gap-4">
+                <!-- <h1 class="text-2xl font-bold text-center">LN GPT 2.0⚡️</h1> -->
+                <h4 id="empty-message" class="text-slate-500 hidden text-center text-bold">LNGPT is a Lightning powered AI chatbot. <br/> ⚡️ Sats for Chats ⚡️</h4>
+                <button id="clear-button" type="submit" class="hidden absolute top-2 right-2 text-slate-500 py-2 px-4 rounded-md">
+                  Clear
+                </button>
+            </div>
+                <section id="messages" class="my-2 h-[92%] rounded"></section>
+            
         <div id="this-div" class="h-[6%]">
         <form 
             id="chat-form"
             hx-on::ws-before-send="beforeChatRequest()" 
-            hx-on::ws-after-send="afterChatRequest()" 
+            hx-on::ws-after-send="afterChatRequest()"
             class="flex gap-4"
             ws-send
         >
-        <input id="chat-input" type="text" name="message" class="w-full border focus:ring-indigo-500 focus:border-indigo-500 overflow-auto mx-auto rounded-md shadow-sm sm:text-sm border-gray-300 p-2 h-1/6" placeholder="Type your message here" autocomplete="off" enterkeyhint="send" required autofocus>
+        <input id="chat-input" type="text" name="message" class="w-full border focus:ring-indigo-500 focus:border-indigo-500 overflow-auto mx-auto rounded-md shadow-sm sm:text-sm border-gray-300 p-2" placeholder="Type a message" autocomplete="off" enterkeyhint="send" required autofocus>
         <input type="hidden" name="conversation" id="conversation" value="" hidden>
         <button id="send-button" type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-md">
           Send
         </button>
-        <button id="clear-button" type="button" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-md" onclick="clearConversation()">
-            Restart
-        </button>
+        
       </form>
-            <button id="top-up-button" onclick="topUp()" class="w-full bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-md" style="display: none;">
+            <button id="top-up-button" class="w-full bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-md" style="display: none;">
                   Top Up
               </button>
         </div>
-      
   </div>
-  
-  <script>
-
-    const commonBtn = 'py-2 px-4 font-bold rounded-md text-white';
-    const callback = 'https://getalby.com/lnurlp/kodylow/callback';
-    const SATS_PER_TOP_UP = 10;
-    const SATS_PER_SEND = 1;
-
-    function getSatsFromStorage() {
-      return localStorage.getItem('sats') ? parseInt(localStorage.getItem('sats')) : 0;
-    }
-
-    function setSatsInStorage(amount) {
-      localStorage.setItem('sats', amount);
-      updateSatsDisplay();
-    }
-
-    function updateSatsDisplay() {
-      const satsDisplay = document.getElementById('sats-display');
-      satsDisplay.innerText = `${getSatsFromStorage()} sats`;
-    }
-
-    function deductSatsForSend() {
-      const currentSats = getSatsFromStorage();
-      if (currentSats >= SATS_PER_SEND) {
-        setSatsInStorage(currentSats - SATS_PER_SEND);
-      } else {
-        toastError('Insufficient sats! Please top up.');
-      }
-    }
-
-      // Function to clear the conversation from both the display and localStorage
-      function clearConversation() {
-          // Clear the messages from the display
-          document.getElementById('messages').innerHTML = '';
-
-          // Clear the conversation from the local storage
-          localStorage.removeItem('conversationHistory');
-
-          // Reset the conversation array
-          conversation.length = 0;
-      }
-
-      // Display previous conversation (if any) when the page loads
-      document.addEventListener('DOMContentLoaded', function() {
-          const messagesDiv = document.getElementById('messages');
-          messagesDiv.innerHTML = conversation.join('<br>');  // Assuming each message is separated by a line break
-          scrollToBottom();
-      });
-
-    async function topUp() {
-      try {
-        const paymentRequest = await getLightningInvoice(SATS_PER_TOP_UP);
-        await window.webln.enable();
-        const { preimage } = await window.webln.sendPayment(paymentRequest);
-        if (!!preimage) {
-          setSatsInStorage(getSatsFromStorage() + SATS_PER_TOP_UP);
-          updateUI();
-            const sendButton = document.getElementById('send-button');
-            sendButton.removeAttribute('disabled');
-            sendButton.innerText = 'Send';
-            sendButton.className = commonBtn + ' bg-blue-500 hover:bg-blue-700';
-        } else {
-          toastError('Invoice wasn\'t paid!');
-        }
-      } catch (error) {
-        toastError('Error processing payment!');
-      }
-    }
-
-    async function getLightningInvoice(amount) {
-      try {
-        const data = await fetch(`${callback}?amount=${amount * 1000}`);
-        const json = await data.json();
-        return json.pr;
-      } catch (error) {
-        console.log("Error fetching lightning invoice:", error);
-      }
-    }
-
-    function toastError(message) {
-      alert(message);
-    }
-    
-      async function beforeChatRequest() {
-        const button = document.getElementById('send-button');
-        button.setAttribute('disabled', '');
-        button.innerText = 'Sending...';
-        button.className = commonBtn + ' bg-gray-500 cursor-not-allowed';
-      }
-
-      function afterChatRequest() {
-        document.getElementById('chat-form').reset();
-        const button = document.getElementById('send-button');
-        const currentSats = getSatsFromStorage();
-
-        if (currentSats < SATS_PER_SEND) {
-          updateUI(); // This will hide the chat interface and show the "Top Up" button.
-        } else {
-          button.removeAttribute('disabled');
-          button.innerText = 'Send';
-          button.className = commonBtn + ' bg-blue-500 hover:bg-blue-700';
-        }
-      }
-
-      function updateUI() {
-        const currentSats = getSatsFromStorage();
-        const chatInput = document.getElementById('chat-input');
-        const clearButton = document.getElementById('clear-button');
-        const sendButton = document.getElementById('send-button');
-        const topUpButton = document.getElementById('top-up-button');
-        
-
-        if (currentSats === 0) {
-          chatInput.style.display = 'none';
-          sendButton.style.display = 'none';
-          topUpButton.style.display = 'inline-block';
-          clearButton.style.display = 'none';
-          chatInput.removeAttribute('required');
-        } else {
-          chatInput.style.display = 'inline-block';
-          sendButton.style.display = 'inline-block';
-          topUpButton.style.display = 'none';
-          clearButton.style.display = 'inline-block';
-          chatInput.setAttribute('required', true);
-        }
-      }
-
-      function scrollToBottom() {
-          const messages = document.getElementById('messages');
-          messages.scrollTop = messages.scrollHeight;
-      }
-
-      function checkWebLN() {
-        if (window.webln) {
-          document.getElementById('send-button').style.display = 'inline-block';
-        }
-        updateSatsDisplay();
-        updateUI();
-      }
-
-      document.getElementById('send-button').addEventListener('click', function(event) {
-        deductSatsForSend();
-      });
-
-      document.body.addEventListener('htmx:afterSwap', function(event) {
-          console.log("htmx:afterSwap event triggered");
-          setTimeout(() => {
-              scrollToBottom();
-              console.log("Attempted to scroll to bottom");
-          }, 50);
-      });
-
-      document.addEventListener('DOMContentLoaded', checkWebLN);
-  </script>  
+        <script>
+            const commonBtn = 'py-2 px-4 font-bold rounded-md text-white';
+            
+            function beforeChatRequest() {
+              let button = document.getElementById('send-button');
+              button.setAttribute('disabled', '');
+              button.innerText = 'Sending...';
+              button.className = commonBtn + ' bg-gray-500 cursor-not-allowed';
+            }
+            function afterChatRequest() {
+              document.getElementById('chat-form').reset()
+              const button = document.getElementById('send-button');
+              button.removeAttribute('disabled');
+              button.innerText = 'Send';
+              button.className = commonBtn + ' bg-blue-500 hover:bg-blue-700';
+            }
+          </script>
 </body>
 </html>
